@@ -1,15 +1,15 @@
 {
-    "name": "eveseat/eseye",
-    "description": "A Standalone PHP ESI (EVE Swagger Interface) Client Library",
+    "name": "drkthunder02/eseye",
+    "description": "A Standalone PHP ESI (EVE Swagger Interface) Client Library.  Originally by eveseat/eseye.",
     "type": "library",
     "require": {
-        "php": ">= 7.2|^8.0",
+        "php": ">= 8.1",
         "ext-gmp": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-openssl": "*",
         "guzzlehttp/guzzle": "^6.2|^7.0",
-        "nesbot/carbon": "^2.0",
+        "nesbot/carbon": "^3.0",
         "monolog/monolog": "^2.0",
         "predis/predis": "^1.1",
         "web-token/jwt-easy": "^2.1",
@@ -23,7 +23,7 @@
         "m6web/redis-mock": "^5.0",
         "codeclimate/php-test-reporter": "dev-master"
     },
-    "license": "GPL-2.0",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "Leon Jacobs",

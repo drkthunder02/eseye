@@ -68,7 +68,7 @@ abstract class AbstractArrayAccess implements \ArrayAccess
     /**
      * @param  mixed  $offset
      */
-    public function offsetUnset(mixed $offset):mixed
+    public function offsetUnset(mixed $offset): mixed
     {
 
         unset($this->data[$offset]);
@@ -80,7 +80,6 @@ abstract class AbstractArrayAccess implements \ArrayAccess
      */
     public function __get(string $key): mixed
     {
-
         return $this[$key];
     }
 
@@ -88,9 +87,8 @@ abstract class AbstractArrayAccess implements \ArrayAccess
      * @param string $key
      * @param mixed $val
      */
-    public function __set(string $key, mixed $val): mixed
+    public function __set(string $key, mixed $val): void
     {
-
         $this[$key] = $val;
     }
 }

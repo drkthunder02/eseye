@@ -26,11 +26,16 @@ if (! function_exists('carbon')) {
      * A helper to get a fresh instance of Carbon.
      *
      * @param  null  $data
+     * @param \DateTimeInterface|int|float|string|null $date
      * @return \Carbon\Carbon
      */
-    function carbon($data = null)
+    function carbon(\DateTimeInterface|int|float|string|null $data = null): \Carbon\Carbon
     {
-
+        if ($data instanceof \DateTimerInterface)
+            return \Carbon\Carbon::instance($data);
+        if(is_int($data) || is_float($data) || (is_string($data) && is_numeric($data)))
+                return \Carbon\Carbon::createFromTimestampUTC($data);
+            
         if (! is_null($data))
             return new \Carbon\Carbon($data);
 

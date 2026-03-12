@@ -76,7 +76,7 @@ class GuzzleFetcher implements FetcherInterface
      *
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function __construct(EsiAuthentication $authentication = null)
+    public function __construct(?EsiAuthentication $authentication = null)
     {
 
         $this->authentication = $authentication;
@@ -100,8 +100,7 @@ class GuzzleFetcher implements FetcherInterface
      * @throws \Seat\Eseye\Exceptions\RequestFailedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function call(
-        string $method, string $uri, array $body, array $headers = []): EsiResponse
+    public function call(string $method, string $uri, array $body, array $headers = []): EsiResponse
     {
 
         // If we have authentication data, add the
@@ -243,8 +242,7 @@ class GuzzleFetcher implements FetcherInterface
      * @throws \Seat\Eseye\Exceptions\RequestFailedException
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function httpRequest(
-        string $method, string $uri, array $headers = [], array $body = []): EsiResponse
+    public function httpRequest(string $method, string $uri, array $headers = [], array $body = []): EsiResponse
     {
 
         // Include some basic headers to those already passed in. Everything

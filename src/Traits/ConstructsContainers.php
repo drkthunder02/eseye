@@ -43,7 +43,7 @@ trait ConstructsContainers
      *
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function __construct(array $data = null)
+    public function __construct(?array $data = null)
     {
 
         if (! is_null($data)) {

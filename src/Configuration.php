@@ -83,7 +83,7 @@ class Configuration
     /**
      * @return \Seat\Eseye\Containers\EsiConfiguration
      */
-    public function getConfiguration()
+    public function getConfiguration(): EsiConfiguration
     {
 
         return $this->configuration;
@@ -94,7 +94,7 @@ class Configuration
      *
      * @throws \Seat\Eseye\Exceptions\InvalidConfigurationException
      */
-    public function setConfiguration(EsiConfiguration $configuration)
+    public function setConfiguration(EsiConfiguration $configuration): void
     {
 
         if (! $configuration->valid())
@@ -135,7 +135,7 @@ class Configuration
      * @param $name
      * @return mixed
      */
-    public function __get(string $name)
+    public function __get(string $name): mixed
     {
 
         return $this->configuration->$name;
@@ -143,10 +143,10 @@ class Configuration
 
     /**
      * @param  string  $name
-     * @param  string  $value
+     * @param  mixed  $value
      * @return string
      */
-    public function __set(string $name, string $value)
+    public function __set(string $name, mixed $value): void
     {
 
         return $this->configuration->$name = $value;

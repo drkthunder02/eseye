@@ -254,7 +254,7 @@ class EsiResponse extends ArrayObject
      * @param  string  $name
      * @return bool
      */
-    public function hasHeader(string $name)
+    public function hasHeader(string $name): bool
     {
         // turn headers into case insensitive array
         $key_map = array_change_key_case($this->headers, CASE_LOWER);
@@ -267,7 +267,7 @@ class EsiResponse extends ArrayObject
      * @param  string  $name
      * @return mixed|null
      */
-    public function getHeader(string $name)
+    public function getHeader(string $name): mixed
     {
         // turn header name into case insensitive
         $insensitive_key = strtolower($name);
@@ -285,7 +285,7 @@ class EsiResponse extends ArrayObject
     /**
      * @param  \Carbon\Carbon  $date
      */
-    public function setExpires(Carbon $date)
+    public function setExpires(Carbon $date): void
     {
         // turn headers into case insensitive array
         $key_map = array_change_key_case($this->headers, CASE_LOWER);

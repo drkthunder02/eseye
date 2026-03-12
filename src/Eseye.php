@@ -102,8 +102,7 @@ class Eseye
      *
      * @throws \Seat\Eseye\Exceptions\InvalidContainerDataException
      */
-    public function __construct(
-        EsiAuthentication $authentication = null)
+    public function __construct(?EsiAuthentication $authentication = null)
     {
 
         if (! is_null($authentication))

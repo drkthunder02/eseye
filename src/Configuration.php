@@ -146,7 +146,7 @@ class Configuration
      * @param  mixed  $value
      * @return string
      */
-    public function __set(string $name, mixed $value): void
+    public function __set(string $name, mixed $value)
     {
 
         return $this->configuration->$name = $value;

@@ -22,15 +22,14 @@
 
 namespace Seat\Eseye\Checker\Header;
 
-use Jose\Component\Checker\HeaderChecker;
-use Jose\Component\Checker\InvalidHeaderException;
+use UnexpectedValueException;
 
 /**
  * Class TypeChecker.
  *
  * @package Seat\Web\Extentions\Socialite\EveOnline\Checker
  */
-final class TypeChecker implements HeaderChecker
+final class TypeChecker
 {
     private const HEADER_NAME = 'typ';
 
@@ -56,29 +55,20 @@ final class TypeChecker implements HeaderChecker
         $this->protected_header = $protected_header;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkHeader($value): void
     {
         if (! is_string($value))
-            throw new InvalidHeaderException('"typ" must be a string.', self::HEADER_NAME, $value);
+            throw new UnexpectedValueException('"typ" must be a string.');
 
         if (! in_array($value, $this->supported_types, true))
-            throw new InvalidHeaderException('Unsupported type.', self::HEADER_NAME, $value);
+            throw new UnexpectedValueException('Unsupported type.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportedHeader(): string
     {
         return self::HEADER_NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function protectedHeaderOnly(): bool
     {
         return $this->protected_header;

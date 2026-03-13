@@ -23,9 +23,8 @@
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use Firebase\JWT\JWT;
 use GuzzleHttp\Psr7\Response;
-use Jose\Component\Core\JWK;
-use Jose\Easy\Build;
 use PHPUnit\Framework\TestCase;
 use Seat\Eseye\Configuration;
 use Seat\Eseye\Containers\EsiAuthentication;
@@ -201,12 +200,11 @@ class GuzzleFetcherTest extends TestCase
 
     public function testGuzzleCallingWithAuthentication()
     {
-
         // init a JWK set
-        $jwk = $this->getJwkSet();
+        $jwk = $this->getJwtFixtures();
 
         // generate a JWS Token mocking standard CCP format
-        $jws = $this->getJwsToken($jwk);
+        $jws = $jwt['token'];
 
         $mock = new MockHandler([
             // RefreshToken response
@@ -223,7 +221,7 @@ class GuzzleFetcherTest extends TestCase
             // JWK Sets response
             new Response(200, [], json_encode([
                 'keys' => [
-                    $jwk->jsonSerialize(),
+                    $jwt['jwks']['keys'][0],
                 ],
                 'SkipUnresolvedJsonWebKeys' => true,
             ])),
@@ -290,10 +288,10 @@ class GuzzleFetcherTest extends TestCase
     {
 
         // init a JWK Set
-        $jwk = $this->getJwkSet();
+        $jwk = $this->getJwtFixtures();
 
         // init a JWS Token
-        $jws = $this->getJwsToken($jwk);
+        $jws = $jwt['token'];
 
         $mock = new MockHandler([
             // JWK Endpoint
@@ -303,7 +301,7 @@ class GuzzleFetcherTest extends TestCase
             // JWK Sets response
             new Response(200, [], json_encode([
                 'keys' => [
-                    $jwk->jsonSerialize(),
+                    $jwt['jwks']['keys'][0],
                 ],
                 'SkipUnresolvedJsonWebKeys' => true,
             ])),
@@ -332,55 +330,74 @@ class GuzzleFetcherTest extends TestCase
     }
 
     /**
-     * @return \Jose\Component\Core\JWK
+     * @return array<string, mixed>
      */
-    private function getJwkSet()
+    private function getJwtFixtures(): array
     {
-        return new JWK([
-            "p"   => "1UQV33bi2J-WJ9529sOTuXiAGCh_lcUAgRHayLbBSElC9O_kA8g2ipC0Qu58tpKdKjq2dD7_SfbESqEI0AJD7oMfP1i-Ispn31vjIb7fmnlddF2qflc9SEkWkrZPCntusTzIraxBDUwIlmdOdAI24xHHpGe-DISE4R1LYrQS0m0",
-            "kty" => "RSA",
-            "q"   => "yaEesJOxfHkeYvlo8f1NVCrCyxfzDl3_-_qDm-bpdUDjemsvolYD6AEb0GGiyjFdMJg29iCke_8nzYIuwDf2QzFS96aU0IpxLwyNsXBdOr7K53WmDj7LU4xFfR-gaOQEp-o2KZ7-1EqpPRgeI12wVpfR3Mi4TZuXlgmeyYpt_BU",
-            "d"   => "iZo3pjr-cegcZN2lk3I3qL8By-8bSO4DaZdih6BnHB-VJbhhmSky64wP34wpKe_G486C1o9IsVZ6zuhXrOJdEOIike3d0IKg6jNY24RsV-AX5hYn44Us8ePHQnhqtxf42GujloroctLkAJAlpnYg6-rWW7kAoCjrNxVIaJ4AOabIcpIQwNwqHNjWifik6WttpC_-u-4HmTLG6f-NrVqrSJkBTReRCjsSYz1GH_snBGx2SFS5XbEfvWe0g-Asu8kZPzYL7y5ahMZ3AT4qOjNA-UFkIzYW0BQjwMwTzRq_30bTDZXBLH8YbDCD6HwBhVThmX4k6AjWr4yG7-uJfvTAgQ",
-            "e"   => "AQAB",
-            "use" => "sig",
-            "kid" => "JWK Signature Mock",
-            "qi"  => "baoXJXUnqalu6CMibn1aILUhfDbjW_lVVk-b9ZAK7ZVi8vEKDpvFWTeB-R-kZMaQcYZKSOZshfXSOd8p_hpCY7nL5XuQPndR2jg23vnsddppT8dwOsiOPX1gQufwrtTQX9oibcDX1P5z942esrbHW5ttEkgM4i8Xo5G7tkKed8k",
-            "dp"  => "d2kK8jdn5rDca3Blnd9-HFA7MMukPGC02o_7t3yUlnvm0KxtOCznVQiW1g8gpz1KYLXFKSuI14oi-EJYY9eQ38BtQ5PVyjcYl_ikIWX1X1HrINe9OcZxGsNJr1YCxbS9EuIc3xlexyo2eLhZNh1zTArNhOFNiUa9_Cnh5t861rU",
-            "alg" => "RS256",
-            "dq"  => "rUXJGfXSkSWE94leppcH3UziGaZ7Od2OHv0qHNBT0G_zDUEPrnI86SQKwwkk3J2PeDNXCC0FLYoYqoM1qfptp1C7_BcrzAstOUGQguwNMm7D8CUqjxNnqGTjUqPbNki9t4-O_DWmyMlgpyASxlG9OK0_rHzR5d_QZR_fVVOhMQ",
-            "n"  => "p_iuj0pLDqQsdtXl6cJ8Gqhtm8F5dUSbmNPYoNbB_uM0oQrBBxvKPH7GzDduFMtS6LfloH3hGryTum-lxU1yQ4PjaN3IEdrGpqS6_OWtqZ6mRWrDDNdgWmkFtq5kPwfR2EXdcygWREJ7w1376WWx9l3tVu6zygfCghTTUhVT65fjmnNUR6zWJn15pxTjnQ-zphKlgvWnCDwJEW9UFXK025ztMQFn8rkTxJV9O3Qu3QS-VRjVicPhV7oOMs2YhiqUAmnzu285nKTaG6N_83NIZ5W2N06JfMt6epvTiC-st2joQp4FCsiVPEEQ6wjZJTA7cpdmIoc05X7gMKdipxeO8Q"
+        $private_key = openssl_pkey_new([
+            'private_key_bits' => 2048,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+        ]);
+
+        if ($private_key === false) {
+            throw new runtimeException('Unable to generate a private key for test.');
+        }
+
+        $exported = openssl_pkey_export($private_key, $private_key_pem);
+        $details = openssl_pkey_get_details($private_key);
+
+        if ($exported === false || $details === false || ! isset($details['rsa']['n'], $details['rsa']['e'])) {
+            throw new RuntimeException('Unable to export generated test keys.');
+        }
+
+        return [
+            'jwks' => [
+                'keys' => [[
+                    'kty' => 'RSA',
+                    'use' => 'sig',
+                    'kid' => 'JWT-Signature-Key',
+                    'alg' => 'RS256',
+                    'n' => $this->base64UrlEncode($details['rsa']['n']),
+                    'e' => $this->base64UrlEncode($details['rsa']['e']),
+                ]],
+                'SkipUnresolvedJsonWebKeys' => true,
+            ],
+            'token' => $this->getJwsToken($private_key_pem),
+        ];
+    }
+
+    /**
+     * @param string $private_key
+     * @return string
+     */
+    private function getJwsToken(string $private_key): string
+    {
+        $time = time();
+
+        return JWT::encode([
+            'scp' => [
+                'foo',
+                'bar',
+                'baz',
+                'public',
+            ],
+            'sub' => 'CHARACTER:EVE:90795931',
+            'azp' => 'foo',
+            'name' => 'Warlof Tutsimo',
+            'owner' => 'svnSjVa1uGYyp/ZL3mfkIwkJYzQ=',
+            'exp' => $time + 3600,
+            'iss' => 'https://login.eveonline.com',
+        ], $private_key, 'RS256', 'JWT-Signature-Key', [
+            'typ' => 'JWT',
         ]);
     }
 
     /**
-     * @param \Jose\Component\Core\JWK $jwk
+     * @param  string  $value
      * @return string
      */
-    private function getJwsToken(JWK $jwk): string
+    private function base64UrlEncode(string $value): string
     {
-        $time = time();
-
-        return Build::jws()
-            ->exp($time + 1200)
-            ->alg('RS256')
-            ->payload([
-                'scp' => [
-                    "foo",
-                    "bar",
-                    "baz",
-                    "public",
-                ],
-                "jti" => "7f64ea9f-ee6e-4c4a-9486-d668e8c79f25",
-                "kid" => "JWT-Signature-Key",
-                "sub" => "CHARACTER:EVE:90795931",
-                "azp" => "foo",
-                "name" => "Warlof Tutsimo",
-                "owner" => "svnSjVa1uGYyp/ZL3mfkIwkJYzQ=",
-                "exp"   => $time + 3600,
-                "iss" => "https://login.eveonline.com",
-            ])
-            ->header('typ', 'JWT')
-            ->header('kid', 'JWT-Signature-Key')
-            ->sign($jwk);
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     }
 }

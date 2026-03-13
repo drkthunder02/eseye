@@ -22,30 +22,23 @@
 
 namespace Seat\Eseye\Checker\Claim;
 
-use Jose\Component\Checker\ClaimChecker;
-use Jose\Component\Checker\InvalidClaimException;
+use UnexpectedValueException;
 
 /**
  * Class NameChecker.
  *
  * @package Seat\Web\Extentions\Socialite\EveOnline\Checker\Claim
  */
-class NameChecker implements ClaimChecker
+class NameChecker
 {
     private const NAME = 'name';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function checkClaim($value): void
+    public function checkClaim(mixed $value): void
     {
         if (! is_string($value))
-            throw new InvalidClaimException('"name" must be a string.', self::NAME, $value);
+            throw new UnexpectedValueException('"name" must be a string.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportedClaim(): string
     {
         return self::NAME;

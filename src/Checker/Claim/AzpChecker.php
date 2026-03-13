@@ -22,15 +22,14 @@
 
 namespace Seat\Eseye\Checker\Claim;
 
-use Jose\Component\Checker\ClaimChecker;
-use Jose\Component\Checker\InvalidClaimException;
+use UnexpectedValueException;
 
 /**
  * Class AzpChecker.
  *
  * @package Seat\Web\Extentions\Socialite\EveOnline\Checker\Claim
  */
-class AzpChecker implements ClaimChecker
+class AzpChecker
 {
     private const NAME = 'azp';
 
@@ -49,21 +48,15 @@ class AzpChecker implements ClaimChecker
         $this->client_id = $client_id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function checkClaim($value): void
+    public function checkClaim(mixed $value): void
     {
         if (! is_string($value))
-            throw new InvalidClaimException('"azp" must be a string.', self::NAME, $value);
+            throw new UnexpectedValueException('"azp" must be a string.');
 
         if ($value !== $this->client_id)
-            throw new InvalidClaimException('"azp" must match the originating application.', self::NAME, $value);
+            throw new UnexpectedValueException('"azp" must match the originating application.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function supportedClaim(): string
     {
         return self::NAME;

@@ -27,8 +27,8 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
-use Jose\Component\Core\JWKSet;
-use Jose\Easy\Load;
+use Firebase\JWT\JWK;
+use Firebase\JWT\JWT;
 use Seat\Eseye\Checker\Claim\AzpChecker;
 use Seat\Eseye\Checker\Claim\NameChecker;
 use Seat\Eseye\Checker\Claim\OwnerChecker;
@@ -420,26 +420,73 @@ class GuzzleFetcher implements FetcherInterface
      * @throws \Seat\Eseye\Exceptions\RequestFailedException
      * @throws \Exception
      */
-    private function verifyToken(string $access_token)
+    private function verifyToken(string $access_token): array
     {
 
         $sets = $this->getJwkSets();
 
-        $jwk_sets = JWKSet::createFromKeyData($sets);
+        try {
+            $headers = new \stdClass();
+            $keys = JWK::parseKeySet($sets);
+            $claims = JWT::decode($access_token, $keys, $headers);
+            $claims = json_decode(json_encode($claims, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
 
-        $jws = Load::jws($access_token)
-            ->algs(['RS256', 'ES256', 'HS256'])
-            ->exp()
-            ->iss(Configuration::getInstance()->sso_iss)
-            ->header('typ', new TypeChecker(['JWT'], true))
-            ->claim('sub', new SubEveCharacterChecker())
-            ->claim('azp', new AzpChecker($this->authentication->client_id))
-            ->claim('name', new NameChecker())
-            ->claim('owner', new OwnerChecker())
-            ->keyset($jwk_sets)
-            ->run();
+            if (! is_array($claims)) {
+                throe new \UnexpectedValueException('Decoded token claims are invalid.');
+            }
 
-        return $jws->claims->all();
+            $this->validateTokenHeaders($headers);
+            $this->validateTokenClaims($claims);
+        } catch (InvalidAuthenticationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new InvalidAuthenticationException(sprintf('Unable to verify access token: %s', $e->getMessage()), 0, $e);
+        }
+
+        return $claims;
+    }
+
+    /**
+     * @param  \stdClass  $headers
+     *
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
+     */
+    private function validateTokenHeaders(\stdClass $headers): void
+    {
+        $alg = property_exists($headers, 'alg') ? $headers->alg : null;
+
+        if (! is_string($alg)) {
+            throw new InvalidAuthenticationException('"alg" must be a string.');
+        }
+
+        if (! in_array($alg, ['RS256', 'ES256', 'HS256'], true)) {
+            throw new InvalidAuthenticationException('Unsupported token signing algorithm.');
+        }
+
+        (new TypeChecker(['JWT'], true))->checkHeader(property_exists($headers, 'typ') ? $headers->typ : null);
+    }
+
+    /**
+     * @param  array  $claims
+     *
+     * @throws \Seat\Eseye\Exceptions\InvalidAuthenticationException
+     */
+    private function validateTokenClaims(array $claims): void
+    {
+        $issuer = $claims['iss'] ?? null;
+
+        if (! is_string($issuer)) {
+            throw new InvalidAuthenticationException('"iss" must be a string.');
+        }
+
+        if ($issuer !== Configuration::getInstance()->sso_iss) {
+            throw new InvalidAuthenticationException('"iss" must match the configured SSO issuer.');
+        }
+
+        (new SubEveCharacterChecker())->checkClaim($claims['sub'] ?? null);
+        (new AzpChecker($this->authentication->client_id))->checkClaim($claims['azp'] ?? null);
+        (new NameChecker())->checkClaim($claims['name'] ?? null);
+        (new OwnerChecker())->checkClaim($claims['owner'] ?? null);
     }
 
     /**

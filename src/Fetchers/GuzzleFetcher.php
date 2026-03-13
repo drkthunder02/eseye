@@ -432,7 +432,7 @@ class GuzzleFetcher implements FetcherInterface
             $claims = json_decode(json_encode($claims, JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
 
             if (! is_array($claims)) {
-                throe new \UnexpectedValueException('Decoded token claims are invalid.');
+                throw new \UnexpectedValueException('Decoded token claims are invalid.');
             }
 
             $this->validateTokenHeaders($headers);
